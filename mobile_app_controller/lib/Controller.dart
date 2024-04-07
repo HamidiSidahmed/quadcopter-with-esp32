@@ -46,7 +46,7 @@ class _ControllerState extends State<Controller> {
 
   @override
   void dispose() {
-    _socket.close();
+    _socket.destroy();
     super.dispose();
   }
 
@@ -96,7 +96,7 @@ class _ControllerState extends State<Controller> {
                 Container(
                   child: Text(
                     "Throttle :$throttle",
-                    style: TextStyle(fontSize: 16.sp),
+                    style: TextStyle(fontSize: 8.sp),
                   ),
                 ),
                 Container(
@@ -174,7 +174,9 @@ class _ControllerState extends State<Controller> {
                             });
                             try {
                               _socket.write(jsonEncode({"t": throttle}));
-                              _socket.write(jsonEncode({"y": yaw}));
+                              if (armed == true) {
+                                _socket.write(jsonEncode({"y": yaw}));
+                              }
                             } catch (e) {
                               print(e);
                             }
@@ -212,8 +214,10 @@ class _ControllerState extends State<Controller> {
                               pitch = right_position.dx.toInt();
                             });
                             try {
-                              _socket.write(jsonEncode({"r": 0}));
-                              _socket.write(jsonEncode({"p": 0}));
+                              if (armed == true) {
+                                _socket.write(jsonEncode({"r": 0}));
+                                _socket.write(jsonEncode({"p": 0}));
+                              }
                             } catch (e) {}
                           },
                           onPanUpdate: (details) {
@@ -233,8 +237,10 @@ class _ControllerState extends State<Controller> {
                               roll = ((right_position.dy / 70.h) * -25).toInt();
                               pitch = ((right_position.dx / 70.h) * 25).toInt();
                               try {
-                                _socket.write(jsonEncode({"r": roll}));
-                                _socket.write(jsonEncode({"p": pitch}));
+                                if (armed == true) {
+                                  _socket.write(jsonEncode({"r": roll}));
+                                  _socket.write(jsonEncode({"p": pitch}));
+                                }
                               } catch (e) {}
                             });
                           },

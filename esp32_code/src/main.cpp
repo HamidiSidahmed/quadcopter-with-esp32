@@ -4,8 +4,6 @@
 #include <WiFi.h>
 #include <WiFiServer.h>
 #include <ArduinoJson.h>
-#include "controller.h"
-#include <WiFiClient.h>
 const char *ssid = "r";
 const char *password = "mr.kadeebe";
 const int port = 8080; // TCP port for receiving data
@@ -46,7 +44,7 @@ void setup()
   while (!client.connected())
   {
     client = server.available();
-    delay(1000); 
+    delay(1000);
   }
   mpu_init(1, 0, 0.995);
   motor_init();
@@ -55,8 +53,10 @@ void setup()
 
 void loop()
 {
+  unsigned long start = millis();
   if (client.connected())
   {
+
     mpu.update();
     while (client.available())
     {
@@ -75,7 +75,7 @@ void loop()
       if (c == '}' && jsonStarted)
       {
         jsonStarted = false;
-        DynamicJsonDocument doc(1024);
+        JsonDocument doc;
         deserializeJson(doc, jsonMessage);
         if (doc.containsKey("t"))
         {
@@ -109,9 +109,10 @@ void loop()
       total_angle_Z -= 360;
     while (total_angle_Z < -180)
       total_angle_Z += 360;
-    roll_pid.cal_pid(1.3, 0.001, 0.01, mpu.getAngleX(), 0);
-    pitch_pid.cal_pid(1.3, 0.001, 0.01, mpu.getAngleY(), 0);
+    roll_pid.cal_pid(3, 0.001, 15, mpu.getAngleX(), 0);
+    pitch_pid.cal_pid(3, 0.001, 0.01, mpu.getAngleY(), 0);
     yaw_pid.cal_pid(1.3, 0.001, 0.01, total_angle_Z, 0);
+    Serial.println(roll_pid.output);
     speed1 = throttle - roll_pid.output - pitch_pid.output + yaw_pid.output;
     speed2 = throttle - roll_pid.output + pitch_pid.output + yaw_pid.output;
     speed3 = throttle + roll_pid.output + pitch_pid.output - yaw_pid.output;
@@ -124,14 +125,15 @@ void loop()
                                                   : speed3 = speed3;
     speed4 > 1800 ? speed4 = 1800 : speed4 < 1000 ? speed4 = 1000
                                                   : speed4 = speed4;
-    if (armed == true)
+    
+    if (armed == 1)
     {
       motor1.writeMicroseconds(speed1);
       motor2.writeMicroseconds(speed2);
       motor3.writeMicroseconds(speed3);
       motor4.writeMicroseconds(speed4);
     }
-    else
+    else if(armed==0)
     {
       motor1.writeMicroseconds(1000);
       motor2.writeMicroseconds(1000);
@@ -139,8 +141,10 @@ void loop()
       motor4.writeMicroseconds(1000);
     }
   }
+
   else
   {
+    Serial.println("disconnected");
     client.stop();
     motor1.writeMicroseconds(1000);
     motor2.writeMicroseconds(1000);
@@ -150,4 +154,6 @@ void loop()
     {
     }
   }
+  unsigned long end = millis();
+  
 }

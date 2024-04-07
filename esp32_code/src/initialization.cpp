@@ -37,5 +37,5 @@ void motor_init() // attaching the motors to there pins
     motor2.writeMicroseconds(1000);
     motor3.writeMicroseconds(1000);
     motor4.writeMicroseconds(1000);
-    delay(1000);
+    delay(7000);
 }

@@ -10,22 +10,24 @@ PID::PID()
     derivative = 0;
     integral = 0;
     proportional = 0;
-    prev_angle=0;
+    prev_angle = 0;
 }
 void PID::cal_pid(float kp, float ki, float kd, int angle, int setpoint)
 {
     error = setpoint - angle;
     proportional = kp * error;
-    integral += (ki*sampling_time) * (error+prev_error);
-    derivative = kd*(angle-prev_angle)/sampling_time;
+    integral += (ki) * (error );
+    derivative = kd * (angle - prev_angle);
     if (integral > max)
         integral = max;
     if (integral < -max)
         integral = -max;
 
-    output = integral+derivative+proportional ;
-    if (output>max) output=max;
-    if(output<-max) output=-max;
-    prev_error=error;
-    prev_angle=angle;
+    output = integral + derivative + proportional;
+    if (output > max)
+        output = max;
+    if (output < -max)
+        output = -max;
+    prev_error = error;
+    prev_angle = angle;
 }
